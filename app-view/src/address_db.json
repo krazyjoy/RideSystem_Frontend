@@ -1,0 +1,51 @@
+[
+  {
+    "id":"1",
+    "latitude": "40.772392",
+    "longitude": "-73.984070",
+    "address": "Lincoln Center"
+  },
+  {
+    "id": "2",
+    "latitude": "40.689247",
+    "longitude": "-74.044502",
+    "address": "Statue Of Liberty"
+  },
+  {
+    "id": "3",
+    "latitude": "19.741755",
+    "longitude": "-155.844437",
+    "address": "Diamond Head / Kapahulu / St. Louis Heights Honolulu"
+  },
+  {
+    "id":"4",
+    "latitude": "34.425331",
+    "longitude": "-118.597219",
+    "address": "26101 Magic Mountain Pkwy, Valencia, CA 91355"
+  },
+  {
+    "id": "5",
+    "latitude": "33.7634",
+    "longitude": "-84.3951",
+    "address": "225 Baker St NW, Atlanta, GA 30313, USA"
+  },
+  {
+    "id": "6",
+    "latitude": "29.5593",
+    "longitude": "-95.0900",
+    "address": "2101 E NASA Pkwy, Houston, TX 77058, USA"
+  },
+  {
+    "id": "7",
+    "latitude": "39.9683",
+    "longitude": "-75.1717",
+    "address": "Eastern State Penitentiary, 2027 Fairmount Ave, Philadelphia, PA 19130, USA"
+  },
+  {
+    "id": "8",
+    "latitude": "21.2620",
+    "longitude": "-157.8060",
+    "address": "Unnamed Road, Honolulu, HI 96815, USA"
+  }
+
+]
