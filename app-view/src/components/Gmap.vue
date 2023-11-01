@@ -16,7 +16,7 @@ export default defineComponent({
       formattedAddress_pickup: null,
       formattedAddress_arrive: null,
       plusCode:'',
-      apiKey: 'AIzaSyBaad1eX3MUZ77NSTYQJvyBw0OLzipuaOo',
+      apiKey: 'MY_KEY',
       address_json: address_db
 
     };

@@ -92,7 +92,7 @@ export default{
   methods: {
     decode() {
 
-      const decoded = VueJwtDecode.decode("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGFyaWVjbGFyayIsInJvbGUiOiJ1c2VyIiwiZXhwIjoxNjk4NDc2Mzg0LCJpYXQiOjE2OTg0NDAzODR9.v14Lt948PT6uofU8AG_Lb_1ZTl34S89NmjeaoI2x8K4");
+      const decoded = VueJwtDecode.decode("");
       console.log('decode: ', decoded);
 
       console.log('username: ', decoded.sub);
@@ -114,9 +114,6 @@ export default{
 
             console.log('current_token: ', response.data.token);
 
-            // axios.defaults.headers.common['Authorization'] = response.data.token;
-            //axios.defaults.headers.common['Authorization']
-            //axios.defaults.headers.common['Authorization'] = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGFyaWVjbGFyayIsInJvbGUiOiJ1c2VyIiwiZXhwIjoxNjk4NDY3NDc5LCJpYXQiOjE2OTg0MzE0Nzl9.__ar6FeP-I3nfQSY1lX8rW_EQ8swqdKphXVWNLI3R6I"
 
             const token = response.data.token;
             const decoded_token = VueJwtDecode.decode(token);
