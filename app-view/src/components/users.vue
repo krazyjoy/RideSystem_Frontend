@@ -45,7 +45,10 @@ import router from '../route'
 
       this.user_data = [JSON.parse(localStorage.getItem('user_data'))]
       console.log('users: user data', this.user_data[0])
+      if(this.identity == 'driver'){
 
+        localStorage.setItem('driver_license_plate_number', this.user_data[0].licensePlateNumber)
+      }
     }
   }
 </script>

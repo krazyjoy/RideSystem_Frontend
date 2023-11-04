@@ -15,8 +15,10 @@ export default defineComponent({
       longitude_arrive:'',
       formattedAddress_pickup: null,
       formattedAddress_arrive: null,
+      province:'',
+      city:'',
       plusCode:'',
-      apiKey: 'MY_KEY',
+      apiKey: 'AIzaSyBaad1eX3MUZ77NSTYQJvyBw0OLzipuaOo',
       address_json: address_db
 
     };
@@ -36,7 +38,8 @@ export default defineComponent({
     console.log("arrive: address_id: ", address_id_arrive)
     this.latitude_arrive = this.address_json[address_id_arrive].latitude;
     this.longitude_arrive = this.address_json[address_id_arrive].longitude;
-
+    this.province = this.address_json[address_id_arrive].province;
+    this.city = this.address_json[address_id_arrive].city;
     this.geocodeAddress();
     //console.log('gmap: pickup address: ',localStorage.getItem('arrival_address'));
 
@@ -52,14 +55,18 @@ export default defineComponent({
           key: this.apiKey,
         }
       }).then((response) => {
-        console.log('response: ',response);
+        // console.log('response: ',response);
         const result = response.data.results[0];
-        console.log("result: ", result);
+        // console.log("result: ", result);
         if (result) {
           this.formattedAddress_pickup = result.formatted_address;
           localStorage.setItem('pickup_longitude', this.longitude_pickup);
           localStorage.setItem('pickup_latitude',this.latitude_pickup);
           localStorage.setItem('pickup_address',this.formattedAddress_pickup);
+          localStorage.setItem('arrive_longitude',this.longitude_arrive);
+          localStorage.setItem('arrive_latitude',this.latitude_arrive);
+          localStorage.setItem('province',this.province);
+          localStorage.setItem('city', this.city);
         } else {
           this.formattedAddress_pickup = 'No results found';
         }
@@ -75,9 +82,9 @@ export default defineComponent({
           key: this.apiKey,
         }
       }).then((response) => {
-        console.log('response: ',response);
+        // console.log('response: ',response);
         const result = response.data.results[0];
-        console.log("result: ", result);
+        // console.log("result: ", result);
         if (result) {
           this.formattedAddress_arrive = result.formatted_address;
           localStorage.setItem('arrival_longitude', this.longitude_arrive);

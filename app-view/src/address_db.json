@@ -3,49 +3,107 @@
     "id":"1",
     "latitude": "40.772392",
     "longitude": "-73.984070",
-    "address": "Lincoln Center"
+    "address": "Lincoln Center",
+    "province": "New York",
+    "city": "New York City"
   },
   {
     "id": "2",
     "latitude": "40.689247",
     "longitude": "-74.044502",
-    "address": "Statue Of Liberty"
+    "address": "Statue Of Liberty",
+    "province": "New York",
+    "city": "New York City"
+
   },
   {
     "id": "3",
     "latitude": "19.741755",
     "longitude": "-155.844437",
-    "address": "Diamond Head / Kapahulu / St. Louis Heights Honolulu"
+    "address": "Diamond Head Rd",
+    "province": "Hawaii",
+    "city": "Honolulu"
   },
   {
     "id":"4",
     "latitude": "34.425331",
     "longitude": "-118.597219",
-    "address": "26101 Magic Mountain Pkwy, Valencia, CA 91355"
+    "address": "six flags",
+    "province":"California",
+    "city": "Los Angeles"
   },
   {
     "id": "5",
-    "latitude": "33.7634",
-    "longitude": "-84.3951",
-    "address": "225 Baker St NW, Atlanta, GA 30313, USA"
+    "latitude": "33.4536",
+    "longitude": "-84.2336",
+    "address": "Centennial Olympic Park",
+    "province": "Georgia",
+    "city": "Atlanta"
   },
   {
     "id": "6",
     "latitude": "29.5593",
     "longitude": "-95.0900",
-    "address": "2101 E NASA Pkwy, Houston, TX 77058, USA"
+    "address": "Nasa",
+    "province": "Texas",
+    "city": "Houston"
+
   },
   {
     "id": "7",
     "latitude": "39.9683",
     "longitude": "-75.1717",
-    "address": "Eastern State Penitentiary, 2027 Fairmount Ave, Philadelphia, PA 19130, USA"
+    "address": "Eastern State Penitentiary",
+    "province": "Pennsylvania",
+    "city": "Philadelphia"
   },
   {
     "id": "8",
-    "latitude": "21.2620",
-    "longitude": "-157.8060",
-    "address": "Unnamed Road, Honolulu, HI 96815, USA"
-  }
+    "latitude": "21.248",
+    "longitude": "157.4422",
+    "address": "Kailua Beach",
+    "province": "Hawaii",
+    "city": "Honolulu"
+  },
+  {
+    "id": "9",
+    "latitude": "33.6665",
+    "longitude": "-84.4426",
+    "address": "academy theatre",
+    "province": "Georgia",
+    "city": "Atlanta"
+  },
+  {
+    "id": "10",
+    "latitude": "33.759270",
+    "longitude": "-84.407240",
+    "address": "Atlanta Braves",
+    "province": "Georgia",
+    "city": "Atlanta"
+  },
+  {
+    "id": "11",
+    "latitude": "29.441424",
+    "longitude": "-95.2354",
+    "address": "The Menil Collection",
+    "province": "Texas",
+    "city": "Houston"
 
+  },
+  {
+    "id": "12",
+    "latitude": "39.957027",
+    "longitude": "-75.200857",
+    "address": "Liberty Bell Pavilion",
+    "province": "Pennsylvania",
+    "city": "Philadelphia"
+  },
+  {
+    "id": "13",
+    "latitude": "39.57862",
+    "longitude": "-75.94895",
+    "address": "Philadelphia City Hall",
+    "province": "Pennsylvania",
+    "city": "Philadelphia"
+  }
 ]

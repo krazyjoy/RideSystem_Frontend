@@ -158,13 +158,16 @@ export default{
             // retrieve user id, state -> mqtt
             console.log('login: user_id: ',response.data.uid);
             localStorage.setItem('user_id', response.data.uid);
+            localStorage.setItem('channel',response.data.state);
             if (response.data.identity == "driver") {
               // pass channel topic to mqtt
-              localStorage.setItem('channel',response.data.state);
+
+              console.log("driver's channel: ",localStorage.getItem('channel'))
               // redirect to users
               router.push('/users')
             } else if (response.data.identity == "passenger") {
               console.log("client request ride");
+              console.log("passenger's channel: ",localStorage.getItem('channel'))
               router.push('/users')
 
             }

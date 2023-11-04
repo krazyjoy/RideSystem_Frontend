@@ -4,18 +4,53 @@
 import axios from 'axios'
 import GMap from './Gmap.vue'
 import {v4} from 'uuid';
-  import {
-    EMQX_IP,
-      MQTT_OPTIONS
-  } from '/utils/mqtt_config.js'
-  import * as mqtt from 'mqtt/dist/mqtt.min';
+import driver_addr from '/src/driver_addr.json'
 
+import * as mqtt from 'mqtt/dist/mqtt.min';
 
-var client;
   export default {
     name: "rides-view",
     data() {
       return {
+        // mqtt https://www.emqx.com/en/blog/how-to-use-mqtt-in-vue
+        mqtt_group:{
+          connection:{
+            protocol: 'ws',
+            host: '192.168.12.218',
+            port: '8083',
+            endpoint:'/mqtt',
+            clean: false,
+            connectTimeout: 30 * 1000,
+            reconnectPeriod: 4000,
+            clientId: localStorage.getItem('user_id') + "_" + v4(),
+            username: 'admin',
+            password: 'public',
+            subscribeSuccess: false,
+            connecting: false,
+            retryTimes: 0,
+          },
+          subscription:{
+            topic: localStorage.getItem('channel'),
+            qos: 2
+          },
+          subscribe:{
+            doSubscribe: false,
+            doUnSubscribe: false
+          },
+          publish:{
+            doPublish: true,
+            topic:'',
+            qos: 2,
+            payload: ''
+          },
+          client:{
+            connected: false,
+
+          },
+          receiveNews: []
+        },
+
+
         // client & driver
         identity: localStorage.getItem("identity"),
         channel: localStorage.getItem("channel"),
@@ -23,25 +58,28 @@ var client;
         latitude: 2,
         rid: 15,
 
+
         // client
         client_ride_data: [{
-          uid: "",
+          uid: localStorage.getItem('user_id'),
           pickUpLong: localStorage.getItem('pickup_longitude'),
           pickUpLat: localStorage.getItem('pickup_latitude'),
+          destLat:localStorage.getItem('arrive_latitude'),
+          destLong:localStorage.getItem('arrive_longitude'),
           pickUpResolvedAddress: localStorage.getItem('pickup_address'),
           destResolvedAddress: localStorage.getItem('arrival_address'),
           rideType: "",
-          province: "",
-          city: ""
+          province: localStorage.getItem('province'),
+          city: localStorage.getItem('city')
         }],
         // driver
         driver_accept_rid: 19,
         subscriptions: [],
         driver_accepting_form: [{
-          driverId: "",
-          latitude: "",
-          longitude: "",
-          licensePlateNumber: "",
+          driverId: localStorage.getItem('user_id'),
+          latitude: '',
+          longitude: '',
+          licensePlateNumber: localStorage.getItem('driver_license_plate_number'),
           vehicleInfo: ""
 
         }],
@@ -50,11 +88,16 @@ var client;
         // Gmap Component
         coordinateX: '',
         coordinateY: '',
-        form_type: ''
+        form_type: '',
+        constructor(){
+          // ...
+          this.handleOnReConnect = this.handleOnReConnect.bind(this);
+        }
       }
     },
     computed: {
       get_subscriptions() {
+        console.log('get subscriptions',`/api/v1/ride/subscriptions?topic=${this.channel}`)
         return `/api/v1/ride/subscriptions?topic=${this.channel}`
       },
       get_rides_url() {
@@ -62,141 +105,298 @@ var client;
       },
       driver_get_ride_sessions() {
         return `/api/v1/ride/${this.driver_accept_rid}`
+      },
+      request_ride(){
+        return `/api/v1/ride`
       }
     },
     components: {
       GMap
     },
     methods: {
+      initConnectionData(){
+        this.mqtt_group.client = {
+          connected: false,
+
+
+        };
+        this.mqtt_group.connection.retryTimes = 0;
+        this.mqtt_group.connection.connecting = false;
+        this.mqtt_group.connection.subscribeSuccess = false;
+        this.mqtt_group.publish.doPublish = false;
+        this.mqtt_group.subscribe.doSubscribe = false;
+      },
+      handleOnReConnect(){
+        this.mqtt_group.connection.retryTimes += 1;
+        if(this.mqtt_group.retryTimes > 5){
+          try{
+            this.mqtt_group.client.end();
+            this.initConnectionData();
+            console.log("Connection max reconnect times limit, stop retry");
+          }catch(error){
+            console.log(error);
+          }
+        }
+      },
+      createConnection(){
+
+        try{
+          this.mqtt_group.connection.connecting = true;
+          const {protocol, host, port, endpoint, ...options} = this.mqtt_group.connection;
+          const connectUrl = `${protocol}://${host}:${port}${endpoint}`;
+          this.mqtt_group.client = mqtt.connect(connectUrl, options);
+          if(this.mqtt_group.client.on){
+            this.mqtt_group.client.on("connect", ()=>{
+              this.mqtt_group.connection.connecting = false;
+              //console.log("Connection succeed!");
+            });
+          }
+
+        }catch(error){
+          this.mqtt_group.connection.connecting = false;
+          console.log("mqtt.connect error", error);
+        }
+      },
+      publish() {
+        const {topic, qos, payload} = this.publish
+        this.client.publish(topic, payload, {qos}, error => {
+          if (error) {
+            console.log('Publish error', error)
+          }
+        });
+      },
       driver_listening_on_channel() {
         console.log("this.channel: ", this.channel);
 
         axios.get(this.get_subscriptions)
             .then(response => {
-              console.log("get subscriptions: ", response.data);
+
+              console.log("get subscriptions response: ", response.data.data.client_id);
+              this.subscriptions = response.data.data.client_id;
+
             }).catch(error => {
           console.log("error", error)
         });
 
       },
-      driver_accept_ride() {
-        console.log('driver_id', this.driver_accepting_form[0].driverId);
-        axios.put(this.driver_get_ride_sessions,
-            this.driver_accepting_form[0]
-        ).then(response => {
-          console.log('driver accept created session');
-          console.log("data: ", response.data);
-          console.log("status: ", response.data.status);
+      mqtt_listening(payload){
+        /* prepare for connection */
 
-          const channel = response.data.data.channel;
-          console.log("channel: ", channel);
-          // this.driver_accepted(channel);
-        })
-      },
-      sendMessage(message) {
-        console.log('sendMessage: message: ', message);
-        client.publish(this.channel, message);
-      },
-      receiveMessage(topic){
-        console.log(`receiveMessage: topic = ${topic}`);
-        client.on("message", function(topic, message) {
+        let send_payload = payload;
+        this.initConnectionData();
+        this.mqtt_group.subscribe.doSubscribe = true;
+        this.mqtt_group.topic = this.channel;
 
-          console.log(`message = ${message.toString()}`);
+        /* start connection - this.mqtt_group.client.on() */
+        this.createConnection();
+
+        if(this.mqtt_group.connection.connecting) {
+          this.mqtt_group.subscribe.doSubscribe = true;
+
+          /* subscribing */
+          if (this.mqtt_group.subscribe.doSubscribe) {
+            const {topic, qos} = this.mqtt_group.subscription;
+            this.mqtt_group.client.subscribe(topic, {qos}, (error, res) => {
+              if (error) {
+                console.log('Subscribe to topics error', error)
+                return
+              }
+              this.mqtt_group.subscribeSuccess = true;
+              console.log('Subscribe to topics res', res);
+
+              /* publishing only for client */
+              if (this.mqtt_group.subscribeSuccess) {
+
+                this.mqtt_group.publish.doPublish = true;
+                this.mqtt_group.publish.topic = this.mqtt_group.topic;
+                this.mqtt_group.publish.payload = send_payload;
+                const { topic, qos, payload } = this.mqtt_group.publish
+
+                if(this.identity == 'passenger'){
+                  this.mqtt_group.client.publish(topic, payload, { qos }, error => {
+                    if (error) {
+                      console.log('Publish error', error)
+                    }else{
+                      console.log('Publish payload: ', send_payload);
+                    }
+                  })
+                }
+
+                /* receiving message */
+                console.log("receiving message")
+                this.mqtt_group.client.on("message", (topic, message) => {
+                  const decoder = new TextDecoder('utf-8');
+                  const text = decoder.decode(message);
+                  try{
+                    let parsed_text = JSON.parse(text)
+
+
+                    if(this.mqtt_group.receiveNews != ''){
+
+                      this.mqtt_group.receiveNews.push(parsed_text);
+                    }else{
+                      this.mqtt_group.receiveNews = [parsed_text];
+                    }
+
+                    /* distance calculation */
+                    let min_dis = Number.POSITIVE_INFINITY;
+                    let closest_order = -1;
+                    if(this.identity == 'driver'){
+                      console.log("message from mqtt group: ", this.mqtt_group.receiveNews)
+                      for (let index=0; index < this.mqtt_group.receiveNews.length; index++) {
+
+
+                        let pickUpLat = this.mqtt_group.receiveNews[index]["departureLatitude"];
+                        let pickUpLong = this.mqtt_group.receiveNews[index]["departureLongitude"];
+
+                        console.log('pickUpLat', pickUpLat)
+                        console.log('pickUpLong',pickUpLong)
+                        console.log('driver_latitude',this.driver_accepting_form[0].latitude)
+                        console.log('driver_longitude',this.driver_accepting_form[0].longitude)
+                        // driver listens to MQTT then
+                        let dis = this.haversine_distance(this.driver_accepting_form[0].latitude, this.driver_accepting_form[0].longitude,
+                            pickUpLat, pickUpLong);
+                        if(dis < min_dis){
+                          min_dis = Math.min(dis, min_dis);
+                          closest_order = this.mqtt_group.receiveNews[index]["rideId"];
+
+                          /* driver accepting */
+                          if(closest_order != Number.POSITIVE_INFINITY){
+                            this.driver_accept_rid = closest_order;
+
+                            axios.put(this.driver_get_ride_sessions,
+                                this.driver_accepting_form[0]
+                            ).then(response => {
+
+                              console.log("driver-accepting-form", this.driver_accepting_form[0]);
+
+                              console.log('driver accept created session');
+                              console.log("data: ", response.data);
+                              console.log("status: ", response.data.status);
+
+                              // this.driver_accepted(channel);
+                            }).catch(error =>{
+                              console.log('failed to accept ride', error);
+                            })
+                          }
+                        }
+                      }
+                    }
+
+                    console.log('mis dis: ', min_dis);
+                    console.log('closest order', closest_order);
+                   return closest_order
+
+
+                    // localStorage.setItem("pickUpLong", ride_info["departureLongitude"])
+                    // localStorage.setItem("pickUpLat", ride_info["departureLatitude"])
+                  }catch(error){
+                    console.log('parse error', error)
+                  }
+
+                });
+
+              }
+            });
+            if (this.mqtt_group.subscribe.doUnSubscribe) {
+              const {topic} = this.mqtt_group.subscription
+              this.mqtt_group.client.unsubscribe(topic, error => {
+                if (error) {
+                  console.log('Unsubscribe error', error)
+                }
+              });
+            }
+          }
+        }
+
+        this.mqtt_group.client.on("error", (error) => {
+          console.log("connection error: ", error);
         });
+
+        this.mqtt_group.client.on("reconnect", ()=>{
+          this.mqtt_group.connection.retryTimes += 1;
+          if(this.mqtt_group.retryTimes > 5){
+            try{
+              this.mqtt_group.client.end();
+              this.initConnectionData();
+              console.log("Connection max reconnect times limit, stop retry");
+            }catch(error){
+              console.log(error);
+            }
+          }
+        });
+        return Number.POSITIVE_INFINITY;
+
+      },
+      render_driver_location(){
+        console.log('driver data:', localStorage.getItem('user_data'));
+
+        var driver_addr_id = Math.floor(Math.random()* driver_addr.length);
+        console.log('driver_addr_id: ', driver_addr_id);
+        var driver_info = driver_addr[driver_addr_id];
+        console.log('driver json: ', driver_info);
+        this.driver_accepting_form[0].latitude = driver_info.latitude;
+        this.driver_accepting_form[0].longitude = driver_info.longitude;
+
+      },
+      driver_accept_ride() {
+        console.log("this.driver_accepting_form ", this.driver_accepting_form[0].latitude)
+        console.log(this.driver_accepting_form[0].longitude)
+        // this.render_driver_location();
+        console.log('driver_id', this.driver_accepting_form[0].driverId);
+        //this.driver_listening_on_channel();
+
+
+        let closest_order = this.mqtt_listening(`${this.driver_accepting_form[0].driverId} listening`);
+        //this.mqtt_group.client.end()
+        console.log("closest order", closest_order);
+        //this.mqtt_group.client.end()
+
+        //let ride_info = localStorage.getItem("ride_info")
+
+
+
+
+
       },
       clientRequestRide(){
-        MQTT_OPTIONS.clientId = v4()
-        this.connectToMqtt();
-
-      },
-
-      connectToMqtt() {
-
-        MQTT_OPTIONS.clientId = v4()
-        var that = this
-        // #ifdef H5
-        client = mqtt.connect('ws://' + EMQX_IP, MQTT_OPTIONS)
-        // #endif
-
-        client.on('connect', function() {
-          console.log('连接成功')
-          client.subscribe(that.topic, function(err) {
-            if (!err) {
-              console.log('订阅成功');
-              console.log('sendMessage: message: ', `client message: ${MQTT_OPTIONS.clientId}`);
-              client.publish(that.topic, `client message: ${MQTT_OPTIONS.clientId}`);
-              console.log(`receiveMessage: topic = ${that.topic}`);
-
-              client.on("message", function(topic, message) {
-
-                console.log(`message = ${message.toString()}`);
-              });
-
-              client.on('connect', function(){
-                console.log("sent and connected");
-
-              });
-
-            }
-          })
-        }).on('reconnect', function(error) {
-          console.log('正在重连...', that.topic, error)
-        }).on('error', function(error) {
-          console.log('连接失败...', error)
-        }).on('end', function() {
-          console.log('连接断开')
-        }).on('message', function(topic, message) {
-          console.log('接收推送信息：', message.toString())
+        console.log("client ride data")
+        console.log(this.client_ride_data[0])
+        axios.post(this.request_ride,
+            this.client_ride_data[0]
+        ).then(response =>{
+          console.log("client request ride: ", response.data.data)
+          this.mqtt_listening(JSON.stringify(response.data.data));
+        }).catch(error =>{
+              console.log("client request ride failed: ", error)
         })
 
-      },
-      getRide() {
-        const passenger_coordinates = {
-          longitude: this.longitude,
-          latitude: this.latitude
-        };
-        console.log('get_rides');
-        console.log('get_rides_url: ', this.get_rides_url);
-        axios.post(this.get_rides_url, passenger_coordinates)
-            .then(response => {
-              console.log(response);
-              console.log(response.data);
-            })
-            .catch(error => {
-              console.error(error);
-            })
-      },
-      reposition() {
-        setInterval(this.navigation(), 60000) // 1 min
 
-      },
-      navigation() {
-        // navigator.geolocation.getCurrentPosition((position) => {
-        //   console.log(position.coords.latitude, position.coords.longitude);
-        //   this.showPosition(position)
-        // });
-
-
-      },
-      showPosition(position) {
-        const x = document.getElementById("position");
-        console.log("position is", x);
-        x.innerHTML = "<br>Latitude: " + position.coords.latitude +
-            "<br><br>Longitude: " + position.coords.longitude;
-        this.getPosition();
       },
       getPosition() {
         const position = document.getElementById("position").innerHTML;
         console.log("position of html is ", position);
+      },
+      haversine_distance(driver_lat, driver_long, passenger_lat, passenger_long) {
+        var R = 3958.8; // Radius of the Earth in miles
+        var rlat1 = driver_lat * (Math.PI/180); // Convert degrees to radians
+        var rlat2 = passenger_lat * (Math.PI/180); // Convert degrees to radians
+        var difflat = rlat2-rlat1; // Radian difference (latitudes)
+        var difflon = (passenger_long-driver_long) * (Math.PI/180); // Radian difference (longitudes)
+
+        var d = 2 * R * Math.asin(Math.sqrt(Math.sin(difflat/2)*Math.sin(difflat/2)+Math.cos(rlat1)*Math.cos(rlat2)*Math.sin(difflon/2)*Math.sin(difflon/2)));
+        return d;
       }
+
 
     },
     mounted() {
       console.log("identity: ", this.identity)
-      console.log("driver's subscriptions: ", this.subscriptions)
-      this.navigation();
-      console.log('pickup longitude: ',localStorage.getItem('pickup_longitude'));
-      console.log('arrive address: ',localStorage.getItem('arrival_address'));
+
+      if(this.identity == 'driver'){
+        this.render_driver_location();
+
+      }
     }
   }
 </script>
@@ -259,7 +459,7 @@ var client;
     <div class="container" v-if="this.identity=='driver'">
       <!-- driver receive form -->
       <div class="driver-form-container" v-if="this.identity=='driver'">
-        <form>
+        <form @submit.prevent="clientRequestRide">
           <div class="form-group">
             <label for="driverId" class="form-label">driverId</label>
             <input v-model="this.driver_accepting_form[0].driverId" type="text" id="driverId" class="form-input">

@@ -1,0 +1,43 @@
+[
+  {
+    "id": "1",
+    "latitude": "21.22043",
+    "longitude": "157.56303",
+    "address": "Pearl Harbor",
+    "province": "Hawaii",
+    "city": "Honolulu"
+  },
+  {
+    "id": "5",
+    "latitude": "33.63915",
+    "longitude": "-84.43934",
+    "address": "Arches Brewing",
+    "province": "Georgia",
+    "city": "Atlanta"
+  },
+  {
+    "id": "8",
+    "latitude": "33.454608",
+    "longitude": "-84.233408",
+    "address": "World of Coca-Cola",
+    "province": "Georgia",
+    "city": "Atlanta"
+  },
+  {
+    "id": "9",
+    "latitude": "36.9945014",
+    "longitude": "-85.5702452",
+    "address": "Society Hill Historic District",
+    "province": "Pennsylvania",
+    "city": "Philadelphia"
+  },
+
+  {
+    "id": "10",
+    "latitude": "29.5593",
+    "longitude": "-95.0900",
+    "address": "Nasa",
+    "province": "Texas",
+    "city": "Houston"
+  }
+]
