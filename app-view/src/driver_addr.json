@@ -39,5 +39,38 @@
     "address": "Nasa",
     "province": "Texas",
     "city": "Houston"
+  },
+  {
+    "id": "11",
+    "latitude": "39.985800",
+    "longitude": "-75.215720",
+    "address": "Belmont Av & S Georges Hill Dr ",
+    "province": "Pennsylvania",
+    "city": "Philadelphia"
+  },
+  {
+    "id": "12",
+    "latitude": "39.992110",
+    "longitude": "-75.233380",
+    "address": "5359 Wynnefield Ave, Philadelphia",
+    "province": "Pennsylvania",
+    "city": "Philadelphia"
+  },
+  {
+    "id": "13",
+    "latitude": "39.9926316",
+    "longitude": "-75.2261687",
+    "address": "2241 Bryn Mawr Ave, Philadelphia",
+    "province": "Pennsylvania",
+    "city": "Philadelphia"
+
+  },
+  {
+    "id": "14",
+    "latitude": "39.9593157",
+    "longitude": "-75.2481494",
+    "address": "210 Cobbs Creek Pkwy, Philadelphia",
+    "province": "Pennsylvania",
+    "city": "Philadelphia"
   }
 ]

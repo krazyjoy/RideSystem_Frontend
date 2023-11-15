@@ -28,7 +28,6 @@ export default {
 
     </header>
 
-
     <router-view></router-view>
     <Footer/>
   </div>

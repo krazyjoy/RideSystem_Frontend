@@ -105,5 +105,23 @@
     "address": "Philadelphia City Hall",
     "province": "Pennsylvania",
     "city": "Philadelphia"
+  },
+  {
+      "id": "14",
+      "latitude": "39.9926316",
+      "longitude": "-75.2261687",
+      "address": "2241 Bryn Mawr Ave, Philadelphia,",
+      "province": "Pennsylvania",
+      "city": "Philadelphia"
+
+  },
+  {
+    "id": "15",
+    "latitude": "39.9593157",
+    "longitude": "-75.2481494",
+    "address": "210 Cobbs Creek Pkwy, Philadelphia",
+    "province": "Pennsylvania",
+    "city": "Philadelphia"
+
   }
 ]

@@ -32,22 +32,32 @@ import router from '../route'
               console.log('get users failed', error);
             })
       },
-      to_rides_url(){
-        router.push("/rides");
+      routing_url(){
+          if(this.identity=='driver'){
+              console.log("to /rides")
+              router.push("/rides")
+          }
+          if(this.identity == 'passenger'){
+              console.log("to /map")
+              router.push("/map");
+          }
+
       }
     },
     mounted(){
-      console.log('users: user data local storage ', localStorage.getItem('user_data'))
-      var tmp = JSON.parse(localStorage.getItem('user_data'));
-      for (const key in tmp) {
+        console.log('users: user data local storage ', localStorage.getItem('user_data'))
+        var tmp = JSON.parse(localStorage.getItem('user_data'));
+
+        for (const key in tmp) {
           console.log(`${key}: ${tmp[key]}`);
-      }
+        }
 
       this.user_data = [JSON.parse(localStorage.getItem('user_data'))]
       console.log('users: user data', this.user_data[0])
       if(this.identity == 'driver'){
-
-        localStorage.setItem('driver_license_plate_number', this.user_data[0].licensePlateNumber)
+          localStorage.setItem("user_id", this.user_data[0].uid)
+          localStorage.setItem('driver_license_plate_number', this.user_data[0].licensePlateNumber)
+          localStorage.setItem("driver_channel", this.user_data[0].state)
       }
     }
   }
@@ -64,7 +74,7 @@ import router from '../route'
         </tr>
       </table>
       <br><br>
-      <button v-on:click="to_rides_url">REQUEST RIDES OR CHECK OUT RIDES</button>
+      <button v-on:click="routing_url">REQUEST RIDES OR CHECK OUT RIDES</button>
     </div>
 
 

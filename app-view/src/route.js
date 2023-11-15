@@ -4,7 +4,10 @@ import Home from "./components/Home.vue";
 import Users from "./components/users.vue";
 import Login from "./components/login.vue";
 import Rides from "./components/rides.vue";
-
+import Mqtt from './components/Mqtt_Connection.vue';
+import Payment from './components/payment.vue';
+import Trajectory from "./components/Trajectory.vue";
+import Gmap from './components/Gmap.vue'
 export const routes = [
     {
         path: '/',
@@ -29,6 +32,32 @@ export const routes = [
         name: 'Rides',
         meta: {layout: 'rides-view'},
         component: Rides
+    },
+    {
+        path: '/mqtt',
+        name: 'Mqtt',
+        meta: {layout: 'mqtt-view'},
+        component: Mqtt
+    },
+    {
+        path: '/payment/:rid',
+        name: 'Payment',
+        meta: {layout: 'payment-view'},
+        component: Payment
+    },
+    {
+        path: '/map',
+        name: 'Gmap',
+        meta: {layout: 'gmap-view'},
+        component: Gmap
+    },
+    {
+        path: '/trajectory',
+        name: 'Trajectory',
+        meta: {layout: 'trajectory-view'},
+        component: Trajectory,
+        props: true
+
     }
 ]
 
